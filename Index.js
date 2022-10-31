@@ -1,5 +1,7 @@
+const { json } = require('express')
 const express = require('express')
 const app = express()
+const morgan = require('morgan')
 
 let persons = [
     { 
@@ -23,78 +25,75 @@ let persons = [
       "number": "39-23-6423122"
     }
 ]
-const totalPerson = persons.length
-const date = new Date();
 
-// Root 
-app.get('/',(request,response) =>{
-    response.send('<h1>Hello! Please provide endpoint</h1>')
-})
 
-//For /info endpoint
-app.get('/info', (request,response) => {
-    response.send(`
-    <h1>Phonebook has info for ${totalPerson} people</h1>
-    <h2>${date}</h2>
-    
-    `)
-})
-
-//For /api/persons endpont
+//GET all persons
 app.get('/api/persons', (request,response) => {
     response.json(persons)
 })
+ 
+//for info endpoint
 
+app.get('/info', (request, response) => {
+    response.send(
+        `
+        <h2>Phonebook has info for ${persons.length} persons</h2>
+        <h3>${Date()}</h3>
+        `
+    )
+})
 
-//For getting user with id
-app.get('/api/persons/:id', (request,response) => {
+//get with id number
+
+app.get('/api/persons/:id', (request, response) => {
     const id = Number(request.params.id)
-    const person = persons.find(person => person.id === id)
+    const checkPerson = persons.find(person => person.id === id)
 
-    if(person){
-        response.json(person)
+    if(checkPerson){
+        response.json(checkPerson)
     }else{
         response.status(404).end()
-    }
+    } 
 })
+//Delete Person
 
-//For deleting a USer
-
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request,response) => {
     const id = Number(request.params.id)
-    persons = persons.filter(note => note.id !== id)
+    persons = persons.filter(person => person.id !== id)
 
     response.status(204).end()
-  })
+})
 
-//For adding a user POST
+//Add person using post
+//Using JSON parser
 app.use(express.json())
+morgan.token('body', (req,res) => JSON.stringify(req.body))
 
 
-app.post('/api/persons',(request,response) =>{
+app.post('/api/persons', morgan(':method :url :status :res[content-length] :response-time ms :body'), (request, response) => {
     const body = request.body
-    const matchName = persons.find(person => person.name.toLowerCase() === body.name.toLowerCase())
-    if(!body.name || !body.number) {
-        return response.status(400).json({
-            error: 'Name or Number missing'
-        })
-    }
+    const matchName = persons.find(person => person.name === body.name)
     if(matchName){
-        return response.status(400).json({
-            error: ' broo nem musta b uniq'
-        })
-    }else{
-        const person = {
-            name: body.name,
-            number: body.number,
-            id:Math.floor(Math.random() * 20),
-            }
-        persons = persons.concat(person)
-        response.json(person)
+        response.status(400).json({error: 'Person with name already exists'})
+
+    } if(!body.name || !body.number){
+        return response.status(400).json({error: 'Name or number is missing'})
+
+        }else{
+
+            const person = {
+                name: body.name,
+                number: body.number,
+                id: Math.floor(Math.random() * 20)
+            }  
+
+            persons = persons.concat(person)
+            response.json(person)
     }
 })
+
 
 
 
 const PORT = 3001
-app.listen(PORT, () => {console.log(`App is running on port ${PORT}`)})
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
