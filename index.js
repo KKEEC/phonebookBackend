@@ -1,4 +1,4 @@
-const { json } = require('express')
+const { json, response } = require('express')
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
@@ -74,10 +74,22 @@ app.delete('/api/persons/:id', (request,response) => {
 app.use(express.json())
 morgan.token('body', (req,res) => JSON.stringify(req.body))
 
+//PUT method
+app.post('/api/persons/:id', (request, response) => {
+    const id = Number(request.params.id)
+    response.send({
+        "name": request.body.name,
+        "number": request.body.number,
+        "id": id 
+    })
+
+})
+
 
 app.post('/api/persons', morgan(':method :url :status :res[content-length] :response-time ms :body'), (request, response) => {
     const body = request.body
     const matchName = persons.find(person => person.name === body.name)
+    
     if(matchName){
         response.status(400).json({error: 'Person with name already exists'})
 
