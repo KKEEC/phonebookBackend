@@ -88,10 +88,22 @@ app.post('/api/persons/:id', (request, response) => {
 
 app.post('/api/persons', morgan(':method :url :status :res[content-length] :response-time ms :body'), (request, response) => {
     const body = request.body
-    const matchName = persons.find(person => person.name === body.name)
     
-    if(matchName){
-        response.status(400).json({error: 'Person with name already exists'})
+    const matchName = persons.find(person => person.name === body.name)
+    const id = Number(matchName?.id)
+    const matchNumber = persons.find(person => person.number === body.number)
+    console.log(matchName)
+    if(matchName && !matchNumber){
+       // response.status(400).json({error: 'Person with name already exists'})
+        const person = {
+            name: body.name,
+            number: body.number,
+            id: id
+            
+        }  
+
+        persons = persons.concat(person)
+        response.json(person)
 
     } if(!body.name || !body.number){
         return response.status(400).json({error: 'Name or number is missing'})
