@@ -1,4 +1,4 @@
-const { json, response } = require('express')
+
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
@@ -6,6 +6,7 @@ const cors = require('cors')
 
 app.use(cors())
 app.use(express.static('build'))
+app.use(express.json())
 
 
 let persons = [
@@ -60,6 +61,16 @@ app.get('/api/persons/:id', (request, response) => {
         response.status(404).end()
     } 
 })
+
+ app.put('/api/persons/:id',(req,res)=>{
+    const body=req.body
+    const id = Number(req.params.id)
+    persons=persons.map((person)=>person.id===id ? body : person)
+    res.json(body)
+
+
+
+}) 
 //Delete Person
 
 app.delete('/api/persons/:id', (request,response) => {
@@ -71,7 +82,7 @@ app.delete('/api/persons/:id', (request,response) => {
 
 //Add person using post
 //Using JSON parser
-app.use(express.json())
+
 morgan.token('body', (req,res) => JSON.stringify(req.body))
 
 
