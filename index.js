@@ -1,4 +1,3 @@
-
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
@@ -7,7 +6,6 @@ const cors = require('cors')
 app.use(cors())
 app.use(express.static('build'))
 app.use(express.json())
-
 
 let persons = [
     { 
@@ -31,7 +29,6 @@ let persons = [
       "number": "39-23-6423122"
     }
 ]
-
 
 //GET all persons
 app.get('/api/persons', (request,response) => {
@@ -84,15 +81,10 @@ app.delete('/api/persons/:id', (request,response) => {
 //Using JSON parser
 
 morgan.token('body', (req,res) => JSON.stringify(req.body))
-
-
-
-
 app.post('/api/persons', morgan(':method :url :status :res[content-length] :response-time ms :body'), (request, response) => {
     const body = request.body
     
     const matchName = persons.find(person => person.name === body.name)
-    const matchId = Number(matchName?.id)
     const matchNumber = persons.find(person => person.number === body.number)
     console.log(matchName)
     if(matchName && matchNumber) {
@@ -103,9 +95,7 @@ app.post('/api/persons', morgan(':method :url :status :res[content-length] :resp
        
         const person = {
             name: body.name,
-            number: body.number,
-            id: matchId
-            
+            number: body.number    
         }  
 
         persons = persons.concat(person)
@@ -126,9 +116,5 @@ app.post('/api/persons', morgan(':method :url :status :res[content-length] :resp
             response.json(person)
     }
 })
-
-
-
-
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
